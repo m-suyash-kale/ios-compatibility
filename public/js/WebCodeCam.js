@@ -65,21 +65,36 @@ qr-decoder (qrcodelib.js) -> https://github.com/LazarSoft/jsqrcode
 			con = Self.element.getContext('2d');
 			w = Self.options.width;
 			h = Self.options.height;
-			navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+			navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia);
 			if (navigator.getUserMedia) {
 				if (!streams[Self.options.videoSource.id] || !streams[Self.options.videoSource.id].active) {
-					navigator.getUserMedia({
-						video: {
-							mandatory: {
-								maxWidth: Self.options.videoSource.maxWidth,
-								maxHeight: Self.options.videoSource.maxHeight
+					if (navigator.mediaDevices.getUserMedia) {
+						navigator.mediaDevices.getUserMedia({
+							video: {
+								mandatory: {
+									maxWidth: Self.options.videoSource.maxWidth,
+									maxHeight: Self.options.videoSource.maxHeight
+								},
+								optional: [{
+									sourceId: Self.options.videoSource.id
+								}]
 							},
-							optional: [{
-								sourceId: Self.options.videoSource.id
-							}]
-						},
-						audio: false
-					}, Self.cameraSuccess, Self.cameraError);
+							audio: false,
+						}, Self.cameraSuccess, Self.cameraError);
+					} else {
+						navigator.getUserMedia({
+							video: {
+								mandatory: {
+									maxWidth: Self.options.videoSource.maxWidth,
+									maxHeight: Self.options.videoSource.maxHeight
+								},
+								optional: [{
+									sourceId: Self.options.videoSource.id
+								}]
+							},
+							audio: false,
+						}, Self.cameraSuccess, Self.cameraError);
+					}
 				} else {
 					Self.cameraSuccess(streams[Self.options.videoSource.id]);
 				}
