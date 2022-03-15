@@ -65,23 +65,10 @@ qr-decoder (qrcodelib.js) -> https://github.com/LazarSoft/jsqrcode
 			con = Self.element.getContext('2d');
 			w = Self.options.width;
 			h = Self.options.height;
-			navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia);
-			if (navigator.getUserMedia) {
+			navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+			if (navigator.getUserMedia || navigator.mediaDevices.getUserMedia) {
 				if (!streams[Self.options.videoSource.id] || !streams[Self.options.videoSource.id].active) {
-					if (navigator.mediaDevices.getUserMedia) {
-						navigator.mediaDevices.getUserMedia({
-							video: {
-								mandatory: {
-									maxWidth: Self.options.videoSource.maxWidth,
-									maxHeight: Self.options.videoSource.maxHeight
-								},
-								optional: [{
-									sourceId: Self.options.videoSource.id
-								}]
-							},
-							audio: false,
-						}, Self.cameraSuccess, Self.cameraError);
-					} else {
+					if (navigator.getUserMedia) {
 						navigator.getUserMedia({
 							video: {
 								mandatory: {
@@ -94,6 +81,19 @@ qr-decoder (qrcodelib.js) -> https://github.com/LazarSoft/jsqrcode
 							},
 							audio: false,
 						}, Self.cameraSuccess, Self.cameraError);
+					} else if (navigator.mediaDevices.getUserMedia) {
+						navigator.mediaDevices.getUserMedia({
+							video: {
+								mandatory: {
+									maxWidth: Self.options.videoSource.maxWidth,
+									maxHeight: Self.options.videoSource.maxHeight
+								},
+								optional: [{
+									sourceId: Self.options.videoSource.id
+								}]
+							},
+							audio: false,
+						}).then(Self.cameraSuccess, Self.cameraError);
 					}
 				} else {
 					Self.cameraSuccess(streams[Self.options.videoSource.id]);
@@ -106,7 +106,7 @@ qr-decoder (qrcodelib.js) -> https://github.com/LazarSoft/jsqrcode
 		},
 		cameraSuccess: function(stream) {
 			streams[Self.options.videoSource.id] = stream;
-			var url = window.URL || window.webkitURL;
+			// var url = window.URL || window.webkitURL;
 			// camera.src = url ? url.createObjectURL(stream) : stream;
 			camera.srcObject = stream;
 			camera.play();
